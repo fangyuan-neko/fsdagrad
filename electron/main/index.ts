@@ -1,6 +1,7 @@
 import { app, BrowserWindow, shell, ipcMain } from 'electron'
 import { release } from 'node:os'
 import { join } from 'node:path'
+import fetch from "node-fetch"
 
 // The built directory structure
 //
@@ -52,8 +53,26 @@ async function createWindow() {
       nodeIntegration: true,
       contextIsolation: false,
     },
-	frame: false
+    frame: false
   })
+
+  fetch('https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN')
+    .then((content: any) => {
+      return content.json();
+      // console.log(content);
+    })
+    .then((text: any) => {
+      return fetch(`https://cn.bing.com${text.images[0].url}`)
+    })
+    .then(imgData => imgData.arrayBuffer())
+    .then(buf => {
+      // fs.open(`./${Date.now()}.png`, "w", (err, fd) => {
+      //   fs.write(fd, buffer.Buffer.from(buf), (err) => {
+      //     if (!err) console.log("save success.")
+      //   })
+      // })
+      win.webContents.send("loadImg", buf);
+    });
 
   if (process.env.VITE_DEV_SERVER_URL) { // electron-vite-vue#298
     win.loadURL(url)
@@ -115,8 +134,7 @@ ipcMain.handle('open-win', (_, arg) => {
     childWindow.loadFile(indexHtml, { hash: arg })
   }
 })
-ipcMain.on("sumbit", (event, arg) => {
-  console.log('fdas');
+
+ipcMain.on("submit", (event, arg) => {
   app.quit();
 });
-

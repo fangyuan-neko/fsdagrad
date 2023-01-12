@@ -4,7 +4,7 @@
 import mainView from './components/mainView.vue';
 import settingView from './components/settingView.vue';
 import clockDash from './components/clockDash.vue';
-import { ipcRenderer, contextBridge } from 'electron';
+import { ipcRenderer } from 'electron';
 import './assets/reset.css';
 
 export default {
@@ -14,9 +14,16 @@ export default {
       currentComponent: 'mainView',
     }
   },
+  mounted(){
+    ipcRenderer.on("loadImg", (info, data)=>{
+        var imgUrl = window.URL.createObjectURL(new Blob([data]))
+        const dom = document.getElementsByClassName("main-view")[0];
+        dom.style.background = 'url(' + imgUrl + ') center / cover no-repeat';
+      });
+  },
 	methods: {
-		sumbit() {
-			ipcRenderer.send("sumbit", "ipcMain")
+		submit() {
+			ipcRenderer.send("submit", "ipcMain");
 		}
 	}
 }
@@ -40,7 +47,7 @@ export default {
 .main-view {
   width: 100vw;
   height: 100vh;
-  background: url('./assets/BingWallpaper.jpg') center/100% 100% no-repeat;
+  overflow: hidden;
 }
 .packing {
   display: flex;
